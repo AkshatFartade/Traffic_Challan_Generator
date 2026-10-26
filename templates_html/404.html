@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ error_title or "Error" }} — Traffic Notice Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="site-container" style="max-width: 520px; margin-top: var(--space-12);">
+    <header class="site-header">
+      <div class="header-office-line">System Status Notice</div>
+      <h1 class="header-title-hi">{{ error_title or "Notice Not Found" }}</h1>
+    </header>
+
+    <main>
+      <div class="banner banner-error" style="margin-bottom: var(--space-6);">
+        <p>{{ error_message or "The requested document, job, or resource was not found or has expired." }}</p>
+      </div>
+
+      <div>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">Return to Register</a>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

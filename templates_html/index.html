@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>यातायात नोटिस जनरेटर / Traffic Notice Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="site-container">
+    <!-- Header -->
+    <header class="site-header">
+      <div class="header-office-line">कार्यालय अतिरिक्त पुलिस अधीक्षक यातायात दुर्ग (छ.ग.)</div>
+      <h1 class="header-title-hi">यातायात नोटिस जनरेटर</h1>
+      <div class="header-title-en">Traffic Notice Generator — Official Processing Register</div>
+    </header>
+
+    <!-- Navigation / Step Indicator -->
+    <nav class="register-steps" aria-label="Processing Steps">
+      <div class="step-item active" data-step="1">
+        <span class="step-num">1</span>
+        <span>Upload</span>
+      </div>
+      <div class="step-item" data-step="2">
+        <span class="step-num">2</span>
+        <span>Check</span>
+      </div>
+      <div class="step-item" data-step="3">
+        <span class="step-num">3</span>
+        <span>Generate</span>
+      </div>
+      <div class="step-item" data-step="4">
+        <span class="step-num">4</span>
+        <span>Download</span>
+      </div>
+    </nav>
+
+    <!-- Live Announcer for Screen Readers -->
+    <div id="aria-live-announcer" class="sr-only" aria-live="polite" style="position: absolute; left: -9999px;"></div>
+
+    <main id="main-content">
+      <!-- STATE 1 & 2: UPLOAD PANEL -->
+      <section id="panel-upload" class="step-panel active">
+        <h2 class="section-heading">Upload Challan Register</h2>
+        <p class="section-desc">
+          Select an official e-challan register (.xlsx or .csv). The inspector scans sheet layouts, verifies row structures, and ensures formatting rules before any notices are generated.
+        </p>
+
+        <div class="register-note">
+          <strong>Register Layout Requirement</strong>: Columns B through J must contain Serial Number, E-Challan Number, Vehicle Number, Violation Date, Name, Address, Mobile Number, Fine Amount, Section.
+        </div>
+
+        <!-- Drop Box -->
+        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Drop or browse for Excel challan file">
+          <p class="drop-prompt">Drop the Excel file here, or choose a file</p>
+          <p class="drop-types">.xlsx or .csv</p>
+          <input type="file" id="file-input" class="file-input-hidden" accept=".xlsx,.csv">
+        </div>
+
+        <!-- File Chosen Strip -->
+        <div id="file-strip" class="file-strip" style="display: none;">
+          <div class="file-strip-info">
+            <span id="file-name" class="file-name"></span>
+            <span id="file-size" class="file-size"></span>
+          </div>
+          <div>
+            <button type="button" id="btn-remove" class="btn btn-danger">Remove</button>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--space-4);">
+          <button type="button" id="btn-inspect" class="btn btn-primary" style="display: none;">Check File</button>
+        </div>
+      </section>
+
+      <!-- STATE 3: CHECKING PANEL -->
+      <section id="panel-checking" class="step-panel">
+        <h2 class="section-heading">Checking Register Integrity</h2>
+        <p class="section-desc">Scanning sheet contents, parsing dates, verifying columns, and checking preflight rules...</p>
+        <div class="progress-box">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width: 60%;"></div>
+          </div>
+          <div class="progress-meta">
+            <span>Validating cell formats and character encodings...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- STATE 4: CHECK REPORT PANEL -->
+      <section id="panel-report" class="step-panel">
+        <h2 class="section-heading">Preflight Check Report</h2>
+        <div id="report-content"></div>
+
+        <div style="margin-top: var(--space-4); display: flex; align-items: center; gap: var(--space-3);">
+          <label style="display: none; align-items: center; gap: 8px; font-size: var(--font-size-sm); cursor: pointer;">
+            <input type="checkbox" id="review-warnings-checkbox">
+            <span>I have reviewed these warnings and approve proceeding</span>
+          </label>
+        </div>
+
+        <div style="margin-top: var(--space-5); display: flex; gap: var(--space-3);">
+          <button type="button" id="btn-start-generation" class="btn btn-primary" disabled>Start Generation</button>
+          <button type="button" class="btn btn-restart">Choose Different File</button>
+        </div>
+      </section>
+
+      <!-- STATE 5 & 6: GENERATING & VERIFYING PANEL -->
+      <section id="panel-generating" class="step-panel">
+        <h2 class="section-heading">Generating Notices</h2>
+        <div class="progress-box">
+          <p id="gen-message" style="font-size: var(--font-size-sm); font-weight: 500;"></p>
+          <div class="progress-bar-track">
+            <div id="gen-progress-fill" class="progress-bar-fill"></div>
+          </div>
+          <div id="gen-meta" class="progress-meta"></div>
+        </div>
+        <p style="font-size: var(--font-size-xs); color: var(--ink-secondary); margin-bottom: var(--space-4);">
+          Generation runs in an isolated subprocess. You can safely refresh this page.
+        </p>
+        <button type="button" id="btn-cancel-generation" class="btn btn-danger">Cancel Generation</button>
+      </section>
+
+      <!-- STATE 7: DONE PANEL -->
+      <section id="panel-done" class="step-panel">
+        <h2 class="section-heading">Notices Ready for Download</h2>
+        <div class="banner banner-success">
+          <strong id="done-summary"></strong><br>
+          <span style="font-size: var(--font-size-xs);">Every notice was verified against your Excel data using word-coordinate audit gates (G1, G2, G3).</span>
+        </div>
+
+        <div style="margin-bottom: var(--space-6);">
+          <a id="btn-download-main" class="btn btn-primary btn-large" href="#" download>Download Notices</a>
+        </div>
+
+        <!-- Preview Box -->
+        <h3 style="font-size: var(--font-size-sm); margin-bottom: var(--space-2);">Document Preview (Page 1)</h3>
+        <div id="preview-container" class="preview-box"></div>
+
+        <!-- Individual Batch Downloads -->
+        <div id="batch-downloads-list" style="margin-top: var(--space-4);"></div>
+
+        <div style="margin-top: var(--space-6); border-top: var(--hairline); padding-top: var(--space-4);">
+          <p style="font-size: var(--font-size-xs); color: var(--ink-muted); margin-bottom: var(--space-3);">
+            Generated files are automatically deleted after 60 minutes for data privacy.
+          </p>
+          <button type="button" class="btn btn-restart">Process Another File</button>
+        </div>
+      </section>
+
+      <!-- STATE 8: VERIFICATION FAILED PANEL -->
+      <section id="panel-failed" class="step-panel">
+        <h2 class="section-heading" style="color: var(--status-error);">Verification Failed</h2>
+        <div class="banner banner-error">
+          <strong>Output download disabled</strong>. One or more verification gates failed. Notices must never be issued with misaligned or unverified data.
+        </div>
+        <ul id="failed-errors-list" class="flagged-list" style="max-height: 240px;"></ul>
+        <div style="margin-top: var(--space-4);">
+          <button type="button" class="btn btn-restart">Start Over</button>
+        </div>
+      </section>
+
+      <!-- STATE 9: ERROR PANEL -->
+      <section id="panel-error" class="step-panel">
+        <h2 class="section-heading" style="color: var(--status-error);">Notice Processing Error</h2>
+        <div class="banner banner-error">
+          <p id="error-panel-message"></p>
+        </div>
+        <div style="margin-top: var(--space-4);">
+          <button type="button" class="btn btn-restart">Try Again</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <span>Traffic Notice Generator — Local System</span>
+      <form action="{{ url_for('auth.logout') }}" method="POST" style="display:inline;">
+        <button type="submit" style="background:none; border:none; color:var(--ink-secondary); font-size:var(--font-size-xs); cursor:pointer; text-decoration:underline;">
+          Logout Supervisor
+        </button>
+      </form>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/strings.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

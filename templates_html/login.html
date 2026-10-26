@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supervisor Login — Traffic Notice Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="site-container" style="max-width: 480px; margin-top: var(--space-12);">
+    <header class="site-header">
+      <div class="header-office-line">कार्यालय अतिरिक्त पुलिस अधीक्षक यातायात</div>
+      <h1 class="header-title-hi" style="font-size: var(--font-size-lg);">पर्यवेक्षक प्रमाणीकरण</h1>
+      <div class="header-title-en" style="font-size: var(--font-size-md);">Supervisor Access Register</div>
+    </header>
+
+    <main>
+      {% if error %}
+      <div class="banner banner-error" role="alert" style="margin-bottom: var(--space-4);">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      {% if not unconfigured and not locked %}
+      <form method="POST" action="{{ url_for('auth.login_page', next=request.args.get('next')) }}">
+        <div style="margin-bottom: var(--space-4);">
+          <label for="password" style="display:block; font-size:var(--font-size-sm); font-weight:600; margin-bottom:var(--space-2);">
+            Supervisor Passphrase
+          </label>
+          <input type="password" id="password" name="password" required autofocus
+                 style="width:100%; padding:var(--space-2) var(--space-3); font-family:var(--font-mono); font-size:var(--font-size-sm); border:var(--hairline-strong); border-radius:var(--radius); background:#FFF;">
+        </div>
+
+        <div style="margin-top: var(--space-6);">
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:var(--space-3);">
+            Access Register
+          </button>
+        </div>
+      </form>
+      {% endif %}
+
+      <div style="margin-top: var(--space-8); border-top: var(--hairline); padding-top: var(--space-4); font-size: var(--font-size-xs); color: var(--ink-secondary);">
+        This official terminal is strictly restricted to authorized supervisory personnel. All attempts are monitored and rate-limited.
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+/* tokens.css — Core design tokens for Traffic Notice stationery system */
+:root {
+  /* Official Stationery Palette */
+  --paper: #F4F1EA;
+  --paper-subtle: #ECE7DD;
+  --ink: #1C2230;
+  --ink-secondary: #4A5260;
+  --ink-muted: #737A87;
+  --rule: #D9D3C4;
+  --rule-strong: #B8B09E;
+
+  /* Accent: Stamp Blue (used sparingly) */
+  --accent: #1F3A5F;
+  --accent-hover: #162B47;
+  --accent-light: #E7EEF7;
+  --focus-ring: #1F3A5F;
+
+  /* Status Tokens */
+  --status-success: #2E6B46;
+  --status-success-bg: #EAF4EE;
+  --status-caution: #A8660F;
+  --status-caution-bg: #F9F2E7;
+  --status-error: #9E2F22;
+  --status-error-bg: #FAECEB;
+
+  /* Typography Scale */
+  --font-serif: "Source Serif 4", "Newsreader", "Georgia", "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", "Consolas", "Courier New", monospace;
+  --font-hindi: "Noto Sans Devanagari", sans-serif;
+
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --font-size-2xl: 26px;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* 4px Spacing Grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Strict Geometry */
+  --radius: 2px;
+  --hairline: 1px solid var(--rule);
+  --hairline-strong: 1px solid var(--rule-strong);
+
+  /* Micro transitions */
+  --transition: 150ms ease;
+  --max-content-width: 760px;
+}
+
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  src: url("/static/fonts/NotoSansDevanagari-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  src: url("/static/fonts/NotoSansDevanagari-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
