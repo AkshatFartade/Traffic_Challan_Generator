@@ -409,7 +409,11 @@ def download_batch(job_id: str, batch_name: str):
 
     target_file = job_dir / "output" / safe_name
     if not target_file.exists():
-        abort(404, description="Batch PDF not found.")
+        candidates = list((job_dir / "output").glob(f"*/{safe_name}"))
+        if candidates and candidates[0].exists():
+            target_file = candidates[0]
+        else:
+            abort(404, description="Batch PDF not found.")
 
     response = send_file(
         target_file,
