@@ -105,15 +105,24 @@ def verify_gate_g3_pdf(pdf_path: Path, batch_records: list[dict]) -> tuple[bool,
             sec_num = sec_split["number"]
             sec_desc = sec_split["description"]
 
+            # Retrieve paired (sibling) record sharing this page, if any
+            sibling_idx = idx + 1 if is_top else idx - 1
+            sibling_rec = batch_records[sibling_idx] if 0 <= sibling_idx < len(batch_records) else None
+            sibling_challan = str(sibling_rec.get("E_CHALLAN_NUMBER", "")).strip() if sibling_rec else ""
+            sibling_veh = str(sibling_rec.get("VEHICLE_NUMBER", "")).strip() if sibling_rec else ""
+            sibling_mobile = re.sub(r"[^0-9]", "", str(sibling_rec.get("MOBILE_NUMBER", "")).strip()) if sibling_rec else ""
+
             # 1. Front page checks
             if challan and challan not in target_front_text:
                 errors.append(f"Record {serial} challan '{challan}' missing from correct front half (Page {front_page_num+1})")
-            if challan and challan in other_front_text:
+            # Only flag as leaked if the sibling record does NOT also have the same challan
+            if challan and challan in other_front_text and challan != sibling_challan:
                 errors.append(f"Record {serial} challan '{challan}' leaked into OPPOSITE front half (Page {front_page_num+1})")
 
             if veh and veh not in target_front_text:
                 errors.append(f"Record {serial} vehicle '{veh}' missing from correct front half (Page {front_page_num+1})")
-            if veh and veh in other_front_text:
+            # Only flag as leaked if the sibling record does NOT also have the same vehicle number
+            if veh and veh in other_front_text and veh != sibling_veh:
                 errors.append(f"Record {serial} vehicle '{veh}' leaked into OPPOSITE front half (Page {front_page_num+1})")
 
             if serial and serial not in target_front_text:
@@ -121,10 +130,13 @@ def verify_gate_g3_pdf(pdf_path: Path, batch_records: list[dict]) -> tuple[bool,
 
             # 2. Back page checks
             clean_mobile = re.sub(r"[^0-9]", "", mobile)
-            if clean_mobile and clean_mobile not in target_back_text:
-                errors.append(f"Record {serial} mobile '{clean_mobile}' missing from correct back slip (Page {back_page_num+1})")
-            if clean_mobile and clean_mobile in other_back_text:
-                errors.append(f"Record {serial} mobile '{clean_mobile}' leaked into OPPOSITE back slip (Page {back_page_num+1})")
+            # Only audit mobile if it looks like a real phone number (>=7 digits)
+            if clean_mobile and len(clean_mobile) >= 7:
+                if clean_mobile not in target_back_text:
+                    errors.append(f"Record {serial} mobile '{clean_mobile}' missing from correct back slip (Page {back_page_num+1})")
+                # Only flag as leaked if the sibling record does NOT also have the same mobile number
+                if clean_mobile in other_back_text and clean_mobile != sibling_mobile:
+                    errors.append(f"Record {serial} mobile '{clean_mobile}' leaked into OPPOSITE back slip (Page {back_page_num+1})")
 
             # 3. Odd-count check: if this was the last record and total count is odd
             if idx == len(batch_records) - 1 and len(batch_records) % 2 != 0:

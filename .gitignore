@@ -1,13 +1,52 @@
+# Virtual environments
 venv/
 .venv/
+env/
+ENV/
+
+# Python bytecode & cache
 __pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Runtime session secret & environment variables
+.session_secret
 .env
+.env.*
+
+# Working directories, jobs & run outputs
 jobs/
 output/
+output_word/
+bench_work/
 tmp/
+scratch/
+*.log
+
+# Data, spreadsheets, and archives (except golden test fixtures)
 *.pdf
 *.csv
 *.xlsx
 *.zip
 !tests/golden/snapshot.pdf
 !tests/golden/*.csv
+
+# Backups & scratch files
+*.bak
+*.backup*
+*.swp
+*.orig
+*~
+notice_lib*.py.backup*
+notice_lib_after_current_after.py
+notice_lib_current.py
+original_files/
+datasets/
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
