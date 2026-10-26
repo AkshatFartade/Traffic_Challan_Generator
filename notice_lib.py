@@ -365,9 +365,34 @@ def normalize_inserted_data_font(content: str, half_points: int = 20) -> str:
 
 
 
+def is_empty_record(rec: dict | None) -> bool:
+    if not rec:
+        return True
+    return not any(bool(str(v).strip()) for v in rec.values())
+
+
 def build_pair_inner(parts: TemplateParts, rec1: dict, rec2: dict, wrap_final_section: bool) -> str:
     content = replace_pair(parts.content, rec1, rec2)
     content = normalize_inserted_data_font(content)
+
+    # Approved engine change: ODD COUNT blanking of unused bottom half on the final sheet
+    if is_empty_record(rec2):
+        p15 = content.find('paraId="33F0394A"')
+        p26 = content.find('paraId="62C2FFF2"')
+        if p15 != -1 and p26 != -1:
+            el15_start = content.rfind('<w:p', 0, p15)
+            el26_start = content.rfind('<w:p', 0, p26)
+            el26_end = content.find('</w:p>', p26) + len('</w:p>')
+
+            front_top = content[:el15_start]
+            front_break = content[el26_start:el26_end]
+            back_all = content[el26_end:]
+
+            tables = list(re.finditer(r'<w:tbl\b', back_all))
+            if len(tables) >= 2:
+                back_top = back_all[:tables[1].start()]
+                content = front_top + front_break + back_top
+
     if wrap_final_section:
         # Not the true last section of the merged document: the section
         # break must be embedded in a paragraph, not a body-level sectPr.
