@@ -177,7 +177,7 @@ def run_preflight(raw_records: list[dict], start_excel_row: int = 1) -> tuple[li
             blocking.append({"row": excel_row, "field": "SECTION", "reason": "Blank violation section", "value": ""})
 
         # 4. Unparseable date
-        if not vdate or vdate.count("/") != 2:
+        if not vdate or not re.match(r"^\d{2}[/-]\d{2}[/-]\d{4}$", str(vdate).strip()):
             blocking.append({"row": excel_row, "field": "VIOLATION_DATE", "reason": f"Unparseable violation date: '{vdate}'", "value": vdate})
 
         # 5. Numeric cells that would print wrongly (e.g. "500.0", "9.1e+09", scientific notation)

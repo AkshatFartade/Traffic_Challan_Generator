@@ -101,16 +101,24 @@ _DATE_FORMATS = [
     "%d/%m/%Y %H:%M:%S",
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%dT%H:%M",
+    "%Y-%m-%d %H:%M",
+    "%d-%m-%Y %H:%M",
+    "%d/%m/%Y %H:%M",
     "%d-%m-%Y",
     "%d/%m/%Y",
     "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%Y/%m/%d %H:%M:%S",
+    "%Y/%m/%d %H:%M",
 ]
 
 
 def format_date_value(value) -> str:
     """Mirrors Format-DateValue from the PS1 script: accepts Excel serials,
-    datetime objects, or a handful of common string formats, and always
-    renders dd/MM/yyyy (or returns the original text if nothing matches)."""
+    datetime objects, or common string formats. Preserves delimiter convention:
+    hyphenated strings (like ISO 2026-07-25T18:26:43 or 2026-07-30T16:14) render
+    as dd-MM-yyyy (e.g. 25-07-2026), slash dates render as dd/MM/yyyy."""
     if value is None or (isinstance(value, str) and not value.strip()):
         return ""
     if isinstance(value, (datetime.datetime, datetime.date)):
@@ -123,9 +131,14 @@ def format_date_value(value) -> str:
         except Exception:
             pass
     s = str(value).strip()
+    out_fmt = "%d-%m-%Y" if "-" in s else "%d/%m/%Y"
+    try:
+        return datetime.datetime.fromisoformat(s).strftime(out_fmt)
+    except ValueError:
+        pass
     for fmt in _DATE_FORMATS:
         try:
-            return datetime.datetime.strptime(s, fmt).strftime("%d/%m/%Y")
+            return datetime.datetime.strptime(s, fmt).strftime(out_fmt)
         except ValueError:
             continue
     return s
