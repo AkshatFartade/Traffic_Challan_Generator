@@ -1,0 +1,12 @@
+venv/
+.venv/
+__pycache__/
+.env
+jobs/
+output/
+tmp/
+*.pdf
+*.csv
+*.xlsx
+*.zip
+!tests/golden/snapshot.pdf
