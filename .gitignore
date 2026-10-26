@@ -10,3 +10,4 @@ tmp/
 *.xlsx
 *.zip
 !tests/golden/snapshot.pdf
+!tests/golden/*.csv
